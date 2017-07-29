@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,7 +18,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.example.demo.constant.JATSXPath;
+import com.example.demo.models.Affiliation;
 import com.example.demo.models.ArticleMeta;
+import com.example.demo.models.Author;
 
 @Service
 public class XMLParserService {
@@ -38,10 +41,6 @@ public class XMLParserService {
 	private ArticleMeta jatsParser(Document document, XPath xPath) throws XPathExpressionException {
 		ArticleMeta articleMeta = new ArticleMeta();
 
-		// Node contribGroup = (Node)
-		// xPath.compile(JATSXPath.CONTRIBGROUP).evaluate(document,
-		// XPathConstants.NODE);
-
 		// set doi
 		Node doi = (Node) xPath.compile(JATSXPath.DOI).evaluate(document, XPathConstants.NODE);
 		if (doi != null) {
@@ -49,7 +48,7 @@ public class XMLParserService {
 		}
 
 		// set Journal title
-		Node journalNameNode = (Node) xPath.compile(JATSXPath.JOURNAL).evaluate(document, XPathConstants.NODE);
+		Node journalNameNode = (Node) xPath.compile(JATSXPath.JOURNALTITLE).evaluate(document, XPathConstants.NODE);
 		if (journalNameNode != null) {
 			articleMeta.setJournal(journalNameNode.getTextContent());
 		}
@@ -57,12 +56,7 @@ public class XMLParserService {
 		NodeList articleTitle = (NodeList) xPath.compile(JATSXPath.ARTICLETITLE).evaluate(document,
 				XPathConstants.NODESET);
 		for (int i = 0; i < articleTitle.getLength(); i++) {
-			// if (articleTitle.item(i) != null &&
-			// articleTitle.item(i).getAttributes().getNamedItem("xml:lang") != null) {
-			// articleMeta.setTitleUkr(articleTitle.item(i).getTextContent());
-			// } else {
 			articleMeta.setTitle(articleTitle.item(i).getTextContent());
-			// }
 		}
 
 		// set article volume
@@ -154,6 +148,62 @@ public class XMLParserService {
 		NodeList keywords = (NodeList) xPath.compile(JATSXPath.KEYWORDS).evaluate(document, XPathConstants.NODESET);
 		for (int i = 0; i < keywords.getLength(); i++) {
 			articleMeta.getKeywords().add(keywords.item(i).getTextContent());
+		}
+
+		Node contribGroup = (Node) xPath.compile(JATSXPath.CONTRIBGROUP).evaluate(document, XPathConstants.NODE);
+
+		NodeList affs = (NodeList) xPath.compile(JATSXPath.AFFIL).evaluate(document, XPathConstants.NODESET);
+		if (affs != null) {
+			for (int i = 0; i < affs.getLength(); i++) {
+				Affiliation affiliation = new Affiliation();
+				affiliation.setAffString(affs.item(i).getTextContent());
+				affiliation.setOrder(i + 1);
+				affiliation.setRid(affs.item(i).getAttributes().getNamedItem("id").getTextContent());
+				articleMeta.getAffiliations().add(affiliation);
+			}
+		}
+
+		// set authors
+		NodeList contribs = (NodeList) xPath.compile("contrib").evaluate(contribGroup, XPathConstants.NODESET);
+		for (int i = 0; i < contribs.getLength(); i++) {
+			Node contrib = contribs.item(i);
+
+			Author author = new Author();
+			Node surname = (Node) xPath.compile("name/surname").evaluate(contrib, XPathConstants.NODE);
+			if (surname != null) {
+				author.setSurname(surname.getTextContent());
+			}
+			Node given = (Node) xPath.compile("name/given-names").evaluate(contrib, XPathConstants.NODE);
+			if (given != null) {
+				author.setGiven(given.getTextContent());
+			}
+
+			NodeList xref = (NodeList) xPath.compile("xref[@ref-type='aff']").evaluate(contrib, XPathConstants.NODESET);
+			if (xref != null) {
+				for (int j = 0; j < xref.getLength(); j++) {
+					String aff = xref.item(j).getAttributes().getNamedItem("rid").getTextContent();
+					for (Affiliation affiliation : articleMeta.getAffiliations()) {
+						if (affiliation.getRid().equals(aff)) {
+							author.getAffils().add(affiliation.getOrder());
+						}
+					}
+				}
+			}
+			Collections.sort(author.getAffils());
+
+			Node email = (Node) xPath.compile("email").evaluate(contrib, XPathConstants.NODE);
+			if (email != null) {
+				author.setEmail(email.getTextContent());
+			}
+
+			articleMeta.getAuthors().add(author);
+
+		}
+
+		// set abstract
+		Node description = (Node) xPath.compile(JATSXPath.ABSTRACT).evaluate(document, XPathConstants.NODE);
+		if (description != null) {
+			articleMeta.setDescription(description.getTextContent());
 		}
 
 		return articleMeta;

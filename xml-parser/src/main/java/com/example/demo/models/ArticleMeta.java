@@ -14,6 +14,9 @@ public class ArticleMeta {
 	private int year;
 	private List<String> keywords = new ArrayList<>();
 	private String doi;
+	private List<Author> authors = new ArrayList<>();
+	private List<Affiliation> affiliations = new ArrayList<>();
+	private String description;
 
 	public String getJournal() {
 		return journal;
@@ -87,4 +90,27 @@ public class ArticleMeta {
 		this.doi = doi;
 	}
 
+	public List<Author> getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(List<Author> authors) {
+		this.authors = authors;
+	}
+
+	public List<Affiliation> getAffiliations() {
+		return affiliations;
+	}
+
+	public void setAffiliations(List<Affiliation> affiliations) {
+		this.affiliations = affiliations;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
 }
