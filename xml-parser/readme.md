@@ -19,3 +19,25 @@ xml to html
 1. AS WE SCAN -- read xml node by node --> process --> write to a file.  repeat till end of the body of the xml.
 2. resuse xmlparser service . node -> value.
 3. think about getting xhtml value out the node - help creating html from the start?
+
+
+
+#Exception handling
+1. Create a base exception class extending Exception
+2. Known exceptions ?
+	
+	a) UnsupportedDocType
+	
+	b) XMLParser --> wrapper class to capture exception coming from document, node.... processing
+	
+	c) ValidationException
+	
+	d) 
+3. Exception codes and messages
+4. handling Connection exception with other micro services
+5. Capture existence of different parts of XML (front, body,  back) and log properly./ email 
+6. Configure accept/reject criteria based on 5.
+ 
+ 
+ 
+

@@ -8,6 +8,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -26,6 +27,15 @@ import com.example.demo.models.Author;
 @Service
 public class XMLParserService {
 
+	@Value(value = "${jats.xml.doctype}")
+	String jatsDocType;
+
+	@Value(value = "${nlm.xml.doctype}")
+	String nlmDocType;
+
+	static boolean isJATSXml = false;
+	static boolean isNLMXml = false;
+
 	public ArticleModel parseXML(String inputFile)
 			throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -33,10 +43,34 @@ public class XMLParserService {
 
 		Document document = builder.parse(inputFile);
 
-		XMLtoHTMLTagHelper.xmlToHtml(document);
+		String docType = checkXMLDocType(document);
 
-		return processJatsArticle(document);
+		isJATSXml = (docType.equals("JATS"));
+		isNLMXml = docType.equals("NLM");
 
+		if (isJATSXml || isNLMXml) {
+			XMLtoHTMLTagHelper.xmlToHtml(document);
+
+			if (isJATSXml) {
+				return processJatsArticle(document);
+			}
+		}
+		else {
+			System.out.println("========We only support JATS and NLM========");
+			System.out.println("========Please check your input XML for the docType and try again :)========");
+			System.out.println("====Please provide input in these formats====");
+		}
+
+		return null;
+	}
+
+	private String checkXMLDocType(Document document) {
+		if (document.getDoctype().getPublicId().equals(jatsDocType)) {
+			return "JATS";
+		} else if (document.getDoctype().getPublicId().equals(jatsDocType)) {
+			return "NLM";
+		}
+		return "UNSUPPORTED_DOCTYPE";
 	}
 
 	public ArticleModel processJatsArticle(Document document) throws XPathExpressionException {
