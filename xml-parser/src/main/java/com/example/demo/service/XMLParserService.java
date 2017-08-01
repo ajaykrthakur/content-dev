@@ -6,10 +6,7 @@ import java.util.Collections;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -17,58 +14,80 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.example.demo.constant.JATSXPath;
+import com.example.demo.constant.JATSXPathConstants;
 import com.example.demo.helper.XMLtoHTMLTagHelper;
 import com.example.demo.models.Affiliation;
-import com.example.demo.models.ArticleMeta;
+import com.example.demo.models.ArticleFullTextModel;
+import com.example.demo.models.ArticleMetaModel;
+import com.example.demo.models.ArticleModel;
+import com.example.demo.models.ArticleReferenceModel;
 import com.example.demo.models.Author;
 
 @Service
 public class XMLParserService {
 
-	public ArticleMeta parseXML(String inputFile)
+	public ArticleModel parseXML(String inputFile)
 			throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 
 		Document document = builder.parse(inputFile);
 
-		XPath xPath = XPathFactory.newInstance().newXPath();
-
 		XMLtoHTMLTagHelper.xmlToHtml(document);
 
-		return jatsParser(document, xPath);
+		return processJatsArticle(document);
 
 	}
 
-	private ArticleMeta jatsParser(Document document, XPath xPath) throws XPathExpressionException {
-		ArticleMeta articleMeta = new ArticleMeta();
+	public ArticleModel processJatsArticle(Document document) throws XPathExpressionException {
+		ArticleModel articleModel = new ArticleModel();
+
+		Node article_front = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ARTICLE_FRONT, document);
+		ArticleMetaModel articleMetadata = getArticleMetadata(article_front);
+
+		articleModel.setArticleMetadata(articleMetadata);
+
+		Node article_body = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ARTICLE_BODY, document);
+		ArticleFullTextModel articleFulltext = getArticleFullText(article_body);
+
+		articleModel.setArticleFulltext(articleFulltext);
+
+		Node article_back = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ARTICLE_BACK, document);
+		ArticleReferenceModel articleReference = getArticleReference(article_back);
+
+		articleModel.setArticleReferenceModel(articleReference);
+
+		return articleModel;
+	}
+
+	private ArticleMetaModel getArticleMetadata(Node article_front) throws XPathExpressionException {
+		ArticleMetaModel articleMeta = new ArticleMetaModel();
 
 		// set doi
-		Node doi = (Node) xPath.compile(JATSXPath.DOI).evaluate(document, XPathConstants.NODE);
+		Node doi = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.DOI, article_front);
 		if (doi != null) {
 			articleMeta.setDoi(doi.getTextContent());
 		}
 
 		// set Journal title
-		Node journalNameNode = (Node) xPath.compile(JATSXPath.JOURNALTITLE).evaluate(document, XPathConstants.NODE);
+		Node journalNameNode = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.JOURNAL_TITLE, article_front);
 		if (journalNameNode != null) {
 			articleMeta.setJournal(journalNameNode.getTextContent());
 		}
 
 		// set article title
-		Node articleTitle = (Node) xPath.compile(JATSXPath.ARTICLETITLE).evaluate(document, XPathConstants.NODE);
+		Node articleTitle = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ARTICLE_TITLE, article_front);
 		if (articleTitle != null) {
 			articleMeta.setTitle(articleTitle);
 		}
 
-		// set article volume
+		// set issue volume
 		try {
-			Node volume = (Node) xPath.compile(JATSXPath.VOLUME).evaluate(document, XPathConstants.NODE);
+			Node volume = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.VOLUME, article_front);
 			if (volume != null) {
 				articleMeta.setVolume(Integer.parseInt(volume.getTextContent()));
 			}
-			Node issue = (Node) xPath.compile(JATSXPath.ISSUE).evaluate(document, XPathConstants.NODE);
+			Node issue = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ISSUE, article_front);
 			if (issue != null) {
 				articleMeta.setIssue(Integer.parseInt(issue.getTextContent()));
 			}
@@ -78,14 +97,14 @@ public class XMLParserService {
 		}
 
 		// set article number
-		Node electronicNumber = (Node) xPath.compile(JATSXPath.ENUMBER).evaluate(document, XPathConstants.NODE);
+		Node electronicNumber = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ENUMBER, article_front);
 		if (electronicNumber != null) {
 			articleMeta.setId(electronicNumber.getTextContent());
 		}
 
 		// set article year
 		try {
-			Node year = (Node) xPath.compile(JATSXPath.YEAR).evaluate(document, XPathConstants.NODE);
+			Node year = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.YEAR, article_front);
 			if (year != null) {
 				articleMeta.setYear(Integer.parseInt(year.getTextContent()));
 			}
@@ -96,7 +115,7 @@ public class XMLParserService {
 
 		// set article month
 		try {
-			Node month = (Node) xPath.compile(JATSXPath.MONTH).evaluate(document, XPathConstants.NODE);
+			Node month = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.MONTH, article_front);
 			if (month != null) {
 				String monthString;
 				switch (Integer.parseInt(month.getTextContent())) {
@@ -148,14 +167,14 @@ public class XMLParserService {
 		}
 
 		// set keywords
-		NodeList keywords = (NodeList) xPath.compile(JATSXPath.KEYWORDS).evaluate(document, XPathConstants.NODESET);
+		NodeList keywords = XMLtoHTMLTagHelper.getNodeList(JATSXPathConstants.KEYWORDS, article_front);
 		for (int i = 0; i < keywords.getLength(); i++) {
 			articleMeta.getKeywords().add(keywords.item(i).getTextContent());
 		}
 
-		Node contribGroup = (Node) xPath.compile(JATSXPath.CONTRIBGROUP).evaluate(document, XPathConstants.NODE);
+		Node contribGroup = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.CONTRIBGROUP, article_front);
 
-		NodeList affs = (NodeList) xPath.compile(JATSXPath.AFFIL).evaluate(document, XPathConstants.NODESET);
+		NodeList affs = XMLtoHTMLTagHelper.getNodeList(JATSXPathConstants.AFFIL, article_front);
 		if (affs != null) {
 			for (int i = 0; i < affs.getLength(); i++) {
 				Affiliation affiliation = new Affiliation();
@@ -167,21 +186,21 @@ public class XMLParserService {
 		}
 
 		// set authors
-		NodeList contribs = (NodeList) xPath.compile("contrib").evaluate(contribGroup, XPathConstants.NODESET);
+		NodeList contribs = XMLtoHTMLTagHelper.getNodeList("contrib", contribGroup);
 		for (int i = 0; i < contribs.getLength(); i++) {
 			Node contrib = contribs.item(i);
 
 			Author author = new Author();
-			Node surname = (Node) xPath.compile("name/surname").evaluate(contrib, XPathConstants.NODE);
+			Node surname = XMLtoHTMLTagHelper.getNode("name/surname", contrib);
 			if (surname != null) {
 				author.setSurname(surname.getTextContent());
 			}
-			Node given = (Node) xPath.compile("name/given-names").evaluate(contrib, XPathConstants.NODE);
+			Node given = XMLtoHTMLTagHelper.getNode("name/given-names", contrib);
 			if (given != null) {
 				author.setGiven(given.getTextContent());
 			}
 
-			NodeList xref = (NodeList) xPath.compile("xref[@ref-type='aff']").evaluate(contrib, XPathConstants.NODESET);
+			NodeList xref = XMLtoHTMLTagHelper.getNodeList("xref[@ref-type='aff']", contrib);
 			if (xref != null) {
 				for (int j = 0; j < xref.getLength(); j++) {
 					String aff = xref.item(j).getAttributes().getNamedItem("rid").getTextContent();
@@ -194,7 +213,7 @@ public class XMLParserService {
 			}
 			Collections.sort(author.getAffils());
 
-			Node email = (Node) xPath.compile("email").evaluate(contrib, XPathConstants.NODE);
+			Node email = XMLtoHTMLTagHelper.getNode("email", contrib);
 			if (email != null) {
 				author.setEmail(email.getTextContent());
 			}
@@ -204,16 +223,26 @@ public class XMLParserService {
 		}
 
 		// set abstract
-		Node description = (Node) xPath.compile(JATSXPath.ABSTRACT).evaluate(document, XPathConstants.NODE);
+		Node description = XMLtoHTMLTagHelper.getNode(JATSXPathConstants.ABSTRACT, article_front);
 		if (description != null) {
 			articleMeta.setDescription(description);
 		}
 
-		Node articleType = (Node) xPath.compile("/article").evaluate(document, XPathConstants.NODE);
+		Node articleType = XMLtoHTMLTagHelper.getNode("/article", article_front);
 		if (articleType != null) {
 			articleMeta.setArticleType(articleType.getAttributes().getNamedItem("article-type").getTextContent());
 		}
 
 		return articleMeta;
+	}
+
+	private ArticleFullTextModel getArticleFullText(Node article_body) throws XPathExpressionException {
+		// TODO : Parse body from XML to generate FullText HTML
+		return null;
+	}
+
+	private ArticleReferenceModel getArticleReference(Node article_back) throws XPathExpressionException {
+		// TODO : Parse Back content from XML to extract references
+		return null;
 	}
 }
