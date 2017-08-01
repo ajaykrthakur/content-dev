@@ -22,7 +22,7 @@ import com.example.demo.service.XMLParserService;
 
 @RestController
 @RequestMapping("home")
-public class HomeController {
+public class ContentProcessor {
 
 	@Autowired
 	XMLParserService xmlParserService;
@@ -39,7 +39,7 @@ public class HomeController {
 		// return processXml (new File("/sample.xml"));
 	}
 
-	Test processXml(File xmlSourceDocument) {
+	/*Test processXml(File xmlSourceDocument) {
 
 		// equivalent of ajax call.
 		// url call and get response in custom obj form.
@@ -55,9 +55,9 @@ public class HomeController {
 			e.printStackTrace();
 		}
 		return new Test(res);
-	}
+	}*/
 
-	static class Test {
+	/*static class Test {
 		private String res;
 
 		public Test(String res) {
@@ -72,6 +72,6 @@ public class HomeController {
 			this.res = res;
 		}
 
-	}
+	}*/
 
 }

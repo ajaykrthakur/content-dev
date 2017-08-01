@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("news")
-public class NewsController {
-	@RequestMapping(method=RequestMethod.GET)
+//@RestController
+//@RequestMapping("news")
+public class ContentProvider {
+	//@RequestMapping(method=RequestMethod.GET)
 	public String  myMethod() {
 		return processXml (new File("/sample.xml"));
 	}
