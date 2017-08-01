@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.example.demo.constant.JATSXPath;
+import com.example.demo.helper.XMLtoHTMLTagHelper;
 import com.example.demo.models.Affiliation;
 import com.example.demo.models.ArticleMeta;
 import com.example.demo.models.Author;
@@ -33,6 +34,8 @@ public class XMLParserService {
 		Document document = builder.parse(inputFile);
 
 		XPath xPath = XPathFactory.newInstance().newXPath();
+
+		XMLtoHTMLTagHelper.xmlToHtml(document);
 
 		return jatsParser(document, xPath);
 
@@ -52,11 +55,11 @@ public class XMLParserService {
 		if (journalNameNode != null) {
 			articleMeta.setJournal(journalNameNode.getTextContent());
 		}
+
 		// set article title
-		NodeList articleTitle = (NodeList) xPath.compile(JATSXPath.ARTICLETITLE).evaluate(document,
-				XPathConstants.NODESET);
-		for (int i = 0; i < articleTitle.getLength(); i++) {
-			articleMeta.setTitle(articleTitle.item(i).getTextContent());
+		Node articleTitle = (Node) xPath.compile(JATSXPath.ARTICLETITLE).evaluate(document, XPathConstants.NODE);
+		if (articleTitle != null) {
+			articleMeta.setTitle(articleTitle);
 		}
 
 		// set article volume
@@ -203,7 +206,12 @@ public class XMLParserService {
 		// set abstract
 		Node description = (Node) xPath.compile(JATSXPath.ABSTRACT).evaluate(document, XPathConstants.NODE);
 		if (description != null) {
-			articleMeta.setDescription(description.getTextContent());
+			articleMeta.setDescription(description);
+		}
+
+		Node articleType = (Node) xPath.compile("/article").evaluate(document, XPathConstants.NODE);
+		if (articleType != null) {
+			articleMeta.setArticleType(articleType.getAttributes().getNamedItem("article-type").getTextContent());
 		}
 
 		return articleMeta;

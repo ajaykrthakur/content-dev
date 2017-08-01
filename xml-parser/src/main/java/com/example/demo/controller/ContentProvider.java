@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("news")
-public class NewsController {
+public class ContentProvider {
 	@RequestMapping(method=RequestMethod.GET)
 	public String  myMethod() {
 		return processXml (new File("/sample.xml"));

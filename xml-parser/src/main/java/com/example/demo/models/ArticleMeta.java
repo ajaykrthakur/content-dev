@@ -6,7 +6,7 @@ import java.util.List;
 public class ArticleMeta {
 
 	private String journal;
-	private String title;
+	private Object title;
 	private int volume;
 	private int issue;
 	private String id;
@@ -16,7 +16,9 @@ public class ArticleMeta {
 	private String doi;
 	private List<Author> authors = new ArrayList<>();
 	private List<Affiliation> affiliations = new ArrayList<>();
-	private String description;
+	private Object description;
+	private String articleType;
+	private Object fulltext;
 
 	public String getJournal() {
 		return journal;
@@ -26,11 +28,11 @@ public class ArticleMeta {
 		this.journal = journal;
 	}
 
-	public String getTitle() {
+	public Object getTitle() {
 		return title;
 	}
 
-	public void setTitle(String title) {
+	public void setTitle(Object title) {
 		this.title = title;
 	}
 
@@ -106,11 +108,27 @@ public class ArticleMeta {
 		this.affiliations = affiliations;
 	}
 
-	public String getDescription() {
+	public Object getDescription() {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	public void setDescription(Object description) {
 		this.description = description;
+	}
+
+	public String getArticleType() {
+		return articleType;
+	}
+
+	public void setArticleType(String articleType) {
+		this.articleType = articleType;
+	}
+
+	public Object getFulltext() {
+		return fulltext;
+	}
+
+	public void setFulltext(Object fulltext) {
+		this.fulltext = fulltext;
 	}
 }

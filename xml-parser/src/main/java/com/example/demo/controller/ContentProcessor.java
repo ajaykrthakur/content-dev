@@ -22,7 +22,7 @@ import com.example.demo.service.XMLParserService;
 
 @RestController
 @RequestMapping("home")
-public class HomeController {
+public class ContentProcessor {
 
 	@Autowired
 	XMLParserService xmlParserService;
