@@ -22,6 +22,15 @@
 	</dependencies>
 
 	<build>
+		<filters>
+			<filter>${basedir}/src/main/resources/environements/${activeprofile}/environment.properties</filter>
+		</filters>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -29,5 +38,33 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>environment</name>
+					<value>dev</value>
+				</property>
+			</activation>
+			<properties>
+				<activeprofile>dev</activeprofile>
+			</properties>
+		</profile>
+		<profile>
+			<id>beta</id>
+			<activation>
+				<property>
+					<name>environment</name>
+					<value>beta</value>
+				</property>
+			</activation>
+			<properties>
+				<activeprofile>beta</activeprofile>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

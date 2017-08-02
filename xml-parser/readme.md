@@ -39,5 +39,15 @@ xml to html
 6. Configure accept/reject criteria based on 5.
  
  
+# Maven Profiling with spring boot
+ Steps: 
  
+ 1) Add profiles and activation criteria in pom.xml
+ 
+ 2) Add resources to filter and filter in pom.xml
+ 
+ 3) Create env specific property files (filter property files)
+ 
+ 4) update application properties to include filtered properties... eg... 
+         input.jats.xml.path =@input.jats.xml.path1@
 
