@@ -9,4 +9,4 @@ steps to run the project:
 6. goto http://localhost:8000/JspUIController/ to see the article page.
 7. for using angular UI app:
 	a)
-	b) 
+	b) url : http://localhost:4200/
