@@ -26,7 +26,7 @@ public class ContentProcessor {
 	@Value(value = "${input.jats.xml.path}")
 	String jatsXmlBasePath;
 	
-	@CrossOrigin(origins = "http://localhost:4200")
+	@CrossOrigin(origins = {"http://localhost:4200","http://localhost:8000"})
 	@RequestMapping(method = RequestMethod.GET)
 	public ArticleModel myMethod() {
 		try {
