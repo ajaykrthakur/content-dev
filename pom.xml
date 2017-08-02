@@ -26,5 +26,6 @@
 
 	<modules>
 		<module>xml-parser</module>
+		<module>JspUIController</module>
 	</modules>
 </project>
